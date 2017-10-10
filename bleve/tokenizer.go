@@ -2,10 +2,11 @@ package bleve
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/blevesearch/bleve/analysis"
 	"github.com/blevesearch/bleve/registry"
-	"github.com/yanyiwu/gojieba"
+	"github.com/tianjipeng/gojieba"
 )
 
 type JiebaTokenizer struct {
@@ -35,6 +36,24 @@ func (x *JiebaTokenizer) Tokenize(sentence []byte) analysis.TokenStream {
 		}
 		result = append(result, &token)
 		pos++
+	}
+	wordsReader := strings.NewReader(string(sentence))
+	totalPosition := 0
+	for {
+		ch, size, err := wordsReader.ReadRune()
+		if err != nil {
+			break
+		}
+		token := analysis.Token{
+			Term:     []byte(string(ch)),
+			Start:    totalPosition,
+			End:      totalPosition + size,
+			Position: totalPosition + size,
+			Type:     analysis.Ideographic,
+		}
+		result = append(result, &token)
+		pos++
+		totalPosition += size
 	}
 	return result
 }
